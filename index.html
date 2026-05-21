@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Дела Софочки</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #5A9B68;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            max-width: 600px;
+            width: 100%;
+            padding: 25px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            position: relative;
+            overflow: hidden;
+        }
+        h1 {
+            margin-bottom: 20px;
+            font-size: 28px;
+            color: #2c3e50;
+            text-align: center;
+        }
+        .form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .form-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .form input, .form button {
+            padding: 12px 15px;
+            border-radius: 12px;
+            border: 1px solid #ddd;
+            font-size: 16px;
+            outline: none;
+            transition: 0.2s;
+        }
+        .form input:focus {
+            border-color: #27ae60;
+        }
+        #taskInput {
+            width: 100%;
+        }
+        #datetimeInput {
+            width: auto;
+            flex: 0 0 auto;
+            min-width: 180px;
+            max-width: 100%;
+        }
+        .form button {
+            background: #27ae60;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            padding: 12px 25px;
+        }
+        .form button:hover {
+            background: #219150;
+        }
+        .task-counter {
+            margin: 15px 0 10px;
+            font-size: 14px;
+            color: #555;
+        }
+        #taskList {
+            list-style: none;
+            padding: 0;
+            margin: 10px 0;
+            max-height: 450px;
+            overflow-y: auto;
+        }
+        .task-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #f8f9fa;
+            padding: 12px 15px;
+            margin-bottom: 8px;
+            border-radius: 12px;
+            border-left: 4px solid #27ae60;
+            transition: background 0.3s, opacity 0.3s;
+        }
+        .task-item.done {
+            background: #e0e0e0;
+            border-left-color: #999;
+            color: #777;
+        }
+        .task-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
+        }
+        .task-check {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border: 2px solid #27ae60;
+            background: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            color: white;
+            transition: 0.2s;
+            flex-shrink: 0;
+        }
+        .task-check.checked {
+            background: #27ae60;
+            border-color: #27ae60;
+            color: white;
+        }
+        .task-info {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        .task-text {
+            font-size: 16px;
+            font-weight: 500;
+        }
+        .task-date {
+            font-size: 13px;
+            color: #666;
+        }
+        .task-item.done .task-text {
+            text-decoration: line-through;
+        }
+        .task-item.done .task-date {
+            color: #999;
+        }
+        .delete-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .delete-btn:hover {
+            background: #c0392b;
+        }
+        /* Салют (на переднем фоне) */
+        .firework {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .firework-particle {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            animation: fireworkAnim 2s ease-out forwards;
+        }
+        @keyframes fireworkAnim {
+            0% { opacity: 1; transform: translate(0,0) scale(1); }
+            100% { opacity: 0; transform: translate(var(--tx), var(--ty)) scale(0); }
+        }
+        /* Текст "УМНИЧКА" мягкий красный */
+        .firework-text {
+            font-size: 72px;
+            font-weight: 900;
+            color: #E74C3C;
+            text-shadow: 4px 4px 10px rgba(0, 0, 0, 0.5), 0 0 20px rgba(231, 76, 60, 0.3);
+            position: relative;
+            z-index: 10000;
+            animation: scaleIn 2s ease-out forwards;
+            font-family: 'Times New Roman', serif;
+            font-style: italic;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+        }
+        @keyframes scaleIn {
+            0% { transform: scale(0); opacity: 0; }
+            50% { transform: scale(1.2); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .error-msg {
+            color: #e74c3c;
+            font-size: 14px;
+            margin-top: 5px;
+            display: none;
+        }
+        @media (max-width: 500px) {
+            .form-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            #datetimeInput {
+                width: 100%;
+                min-width: unset;
+            }
+            .form button {
+                width: 100%;
+            }
+            .firework-text {
+                font-size: 48px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>📋 Дела Софочки</h1>
+    <div class="form">
+        <input type="text" id="taskInput" placeholder="Описание задачи" maxlength="200">
+        <div class="form-row">
+            <input type="datetime-local" id="datetimeInput">
+            <button onclick="createTask()">Создать задачу</button>
+        </div>
+    </div>
+    <div class="task-counter">Задач: <span id="taskCount">0</span> / 100</div>
+    <ul id="taskList"></ul>
+    <div id="errorMsg" class="error-msg"></div>
+</div>
+
+<script>
+    // Максимальное количество задач
+    const MAX_TASKS = 100;
+
+    // Получаем элементы
+    const taskInput = document.getElementById('taskInput');
+    const datetimeInput = document.getElementById('datetimeInput');
+    const taskList = document.getElementById('taskList');
+    const taskCountSpan = document.getElementById('taskCount');
+    const errorMsg = document.getElementById('errorMsg');
+
+    // Устанавливаем текущие дату и время по умолчанию
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    datetimeInput.value = `${year}-${month}-${day}T${hours}:${minutes}`;
+
+    // Счетчик задач
+    let taskCounter = 0;
+
+    // --- Функции для работы с localStorage ---
+    function saveTasks() {
+        const tasks = [];
+        document.querySelectorAll('.task-item').forEach(item => {
+            const text = item.querySelector('.task-text').textContent;
+            const date = item.querySelector('.task-date').textContent.replace('Срок: ', '');
+            const isDone = item.classList.contains('done');
+            tasks.push({ text, date, isDone });
+        });
+        localStorage.setItem('sofiaTasks', JSON.stringify(tasks));
+    }
+
+    function loadTasks() {
+        const stored = localStorage.getItem('sofiaTasks');
+        if (!stored) return;
+        const tasks = JSON.parse(stored);
+        tasks.forEach(task => {
+            // Восстанавливаем задачу из данных
+            const li = document.createElement('li');
+            li.className = 'task-item' + (task.isDone ? ' done' : '');
+
+            const leftDiv = document.createElement('div');
+            leftDiv.className = 'task-left';
+
+            const check = document.createElement('div');
+            check.className = 'task-check' + (task.isDone ? ' checked' : '');
+            check.textContent = '✓';
+            check.style.color = task.isDone ? 'white' : 'transparent';
+
+            const infoDiv = document.createElement('div');
+            infoDiv.className = 'task-info';
+
+            const textSpan = document.createElement('span');
+            textSpan.className = 'task-text';
+            textSpan.textContent = task.text;
+
+            const dateSpan = document.createElement('span');
+            dateSpan.className = 'task-date';
+            dateSpan.textContent = `Срок: ${task.date}`;
+
+            infoDiv.appendChild(textSpan);
+            infoDiv.appendChild(dateSpan);
+
+            leftDiv.appendChild(check);
+            leftDiv.appendChild(infoDiv);
+
+            const deleteBtn = document.createElement('button');
+            deleteBtn.className = 'delete-btn';
+            deleteBtn.textContent = 'Удалить';
+            deleteBtn.onclick = function() {
+                li.remove();
+                taskCounter--;
+                updateCounter();
+                saveTasks();
+            };
+
+            li.appendChild(leftDiv);
+            li.appendChild(deleteBtn);
+
+            // Обработчик чекбокса
+            check.addEventListener('click', function(e) {
+                e.stopPropagation();
+                if (this.classList.contains('checked')) {
+                    this.classList.remove('checked');
+                    this.style.color = 'transparent';
+                    li.classList.remove('done');
+                } else {
+                    this.classList.add('checked');
+                    this.style.color = 'white';
+                    li.classList.add('done');
+                    fireSalute();
+                }
+                saveTasks();
+            });
+
+            taskList.appendChild(li);
+            taskCounter++;
+        });
+        updateCounter();
+    }
+
+    // Функция создания задачи
+    function createTask() {
+        const description = taskInput.value.trim();
+        const deadline = datetimeInput.value;
+
+        if (!description) {
+            showError('Введите описание задачи');
+            return;
+        }
+        if (!deadline) {
+            showError('Выберите дату и время выполнения');
+            return;
+        }
+        if (taskCounter >= MAX_TASKS) {
+            showError('Достигнут лимит задач (100)');
+            return;
+        }
+
+        // Создаем элемент задачи
+        const li = document.createElement('li');
+        li.className = 'task-item';
+
+        // Левая часть (чекбокс + текст + дата)
+        const leftDiv = document.createElement('div');
+        leftDiv.className = 'task-left';
+
+        // Чекбокс (зеленая галочка)
+        const check = document.createElement('div');
+        check.className = 'task-check';
+        check.textContent = '✓'; // галочка, будет скрыта пока не нажата
+        check.style.color = 'transparent'; // скрываем галочку до активации
+
+        // Инфо блок
+        const infoDiv = document.createElement('div');
+        infoDiv.className = 'task-info';
+
+        const textSpan = document.createElement('span');
+        textSpan.className = 'task-text';
+        textSpan.textContent = description;
+
+        const dateSpan = document.createElement('span');
+        dateSpan.className = 'task-date';
+        // Форматируем дату и время для отображения
+        const dateObj = new Date(deadline);
+        const formattedDate = dateObj.toLocaleDateString('ru-RU', {
+            day: 'numeric', month: 'long', year: 'numeric'
+        });
+        const formattedTime = dateObj.toLocaleTimeString('ru-RU', {
+            hour: '2-digit', minute: '2-digit'
+        });
+        dateSpan.textContent = `Срок: ${formattedDate} в ${formattedTime}`;
+
+        infoDiv.appendChild(textSpan);
+        infoDiv.appendChild(dateSpan);
+
+        leftDiv.appendChild(check);
+        leftDiv.appendChild(infoDiv);
+
+        // Кнопка удаления
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'delete-btn';
+        deleteBtn.textContent = 'Удалить';
+        deleteBtn.onclick = function() {
+            li.remove();
+            taskCounter--;
+            updateCounter();
+            saveTasks();
+        };
+
+        li.appendChild(leftDiv);
+        li.appendChild(deleteBtn);
+
+        // Обработчик клика по чекбоксу (с возможностью снятия галочки)
+        check.addEventListener('click', function(e) {
+            e.stopPropagation();
+
+            if (this.classList.contains('checked')) {
+                // Снимаем галочку — задача снова не выполнена
+                this.classList.remove('checked');
+                this.style.color = 'transparent';
+                li.classList.remove('done');
+                // Салют не запускаем при снятии
+            } else {
+                // Отмечаем как выполненную
+                this.classList.add('checked');
+                this.style.color = 'white';
+                li.classList.add('done');
+                // Запускаем салют
+                fireSalute();
+            }
+            saveTasks();
+        });
+
+        taskList.appendChild(li);
+        taskCounter++;
+        updateCounter();
+
+        // Очищаем поля
+        taskInput.value = '';
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        datetimeInput.value = `${year}-${month}-${day}T${hours}:${minutes}`;
+        hideError();
+
+        // Сохраняем задачи
+        saveTasks();
+    }
+
+    // Обновление счетчика
+    function updateCounter() {
+        taskCountSpan.textContent = taskCounter;
+    }
+
+    // Показать ошибку
+    function showError(msg) {
+        errorMsg.textContent = msg;
+        errorMsg.style.display = 'block';
+        setTimeout(() => {
+            errorMsg.style.display = 'none';
+        }, 3000);
+    }
+
+    // Скрыть ошибку
+    function hideError() {
+        errorMsg.style.display = 'none';
+    }
+
+    // Салют (анимация на переднем фоне)
+    function fireSalute() {
+        const colors = ['#ff0000', '#ff9900', '#ffff00', '#00ff00', '#0099ff', '#9900ff', '#ff00ff', '#ff6666', '#66ff66', '#66ccff'];
+
+        // Создаем контейнер для салюта
+        const firework = document.createElement('div');
+        firework.className = 'firework';
+
+        // Генерируем 50-70 частиц
+        const particleCount = 60;
+        for (let i = 0; i < particleCount; i++) {
+            const particle = document.createElement('div');
+            particle.className = 'firework-particle';
+            const color = colors[Math.floor(Math.random() * colors.length)];
+            particle.style.backgroundColor = color;
+            particle.style.boxShadow = `0 0 10px ${color}`;
+
+            // Случайное направление и расстояние
+            const angle = Math.random() * 2 * Math.PI;
+            const distance = 80 + Math.random() * 200;
+            const tx = Math.cos(angle) * distance;
+            const ty = Math.sin(angle) * distance - 50; // немного вверх
+
+            particle.style.setProperty('--tx', tx + 'px');
+            particle.style.setProperty('--ty', ty + 'px');
+
+            // Случайная задержка
+            const delay = Math.random() * 0.3;
+            particle.style.animationDelay = delay + 's';
+
+            // Случайный размер
+            const size = 4 + Math.random() * 10;
+            particle.style.width = size + 'px';
+            particle.style.height = size + 'px';
+
+            // Позиция по центру экрана
+            particle.style.left = (window.innerWidth / 2 - size/2) + 'px';
+            particle.style.top = (window.innerHeight / 2 - size/2) + 'px';
+
+            firework.appendChild(particle);
+        }
+
+        // Добавляем текст "УМНИЧКА" мягким красным
+        const textElement = document.createElement('div');
+        textElement.className = 'firework-text';
+        textElement.textContent = 'УМНИЧКА';
+        firework.appendChild(textElement);
+
+        document.body.appendChild(firework);
+
+        // Удаляем салют через 2.5 секунды
+        setTimeout(() => {
+            firework.remove();
+        }, 2500);
+    }
+
+    // Поддержка Enter для быстрого создания
+    taskInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') createTask();
+    });
+    datetimeInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') createTask();
+    });
+
+    // Инициализация: загружаем задачи из localStorage
+    loadTasks();
+    // Инициализация счетчика
+    updateCounter();
+</script>
+</body>
+</html>
