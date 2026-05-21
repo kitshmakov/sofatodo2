@@ -12,7 +12,12 @@
         }
         body {
             font-family: 'Segoe UI', Arial, sans-serif;
-            background: #5A9B68;
+            /* Фоновое изображение с цветами */
+            background-image: url('https://img.freepik.com/free-photo/flowers-background-copy-space_23-2148015767.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
             min-height: 100vh;
             display: flex;
             justify-content: center;
@@ -20,7 +25,8 @@
             padding: 20px;
         }
         .container {
-            background: white;
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(8px);
             max-width: 600px;
             width: 100%;
             padding: 25px;
@@ -186,7 +192,7 @@
             0% { opacity: 1; transform: translate(0,0) scale(1); }
             100% { opacity: 0; transform: translate(var(--tx), var(--ty)) scale(0); }
         }
-        /* Текст "УМНИЧКА" мягкий красный */
+        /* Текст с бонусными надписями */
         .firework-text {
             font-size: 72px;
             font-weight: 900;
@@ -484,6 +490,12 @@
     function fireSalute() {
         const colors = ['#ff0000', '#ff9900', '#ffff00', '#00ff00', '#0099ff', '#9900ff', '#ff00ff', '#ff6666', '#66ff66', '#66ccff'];
 
+        // Список бонусных надписей
+        const messages = ['УМНИЧКА', 'ОТЛИЧНО', 'СУПЕР', 'КЛАСС', 'ТЫ ЛУЧШАЯ'];
+
+        // Случайный выбор
+        const randomMessage = messages[Math.floor(Math.random() * messages.length)];
+
         // Создаем контейнер для салюта
         const firework = document.createElement('div');
         firework.className = 'firework';
@@ -522,10 +534,10 @@
             firework.appendChild(particle);
         }
 
-        // Добавляем текст "УМНИЧКА" мягким красным
+        // Добавляем текст со случайной надписью
         const textElement = document.createElement('div');
         textElement.className = 'firework-text';
-        textElement.textContent = 'УМНИЧКА';
+        textElement.textContent = randomMessage;
         firework.appendChild(textElement);
 
         document.body.appendChild(firework);
